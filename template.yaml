@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  porteiro
+
+  Sample SAM Template for porteiro
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 3
+    MemorySize: 128
+
+    # You can add LoggingConfig parameters such as the Logformat, Log Group, and SystemLogLevel or ApplicationLogLevel. Learn more here https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html#sam-function-loggingconfig.
+    
+Resources:
+  LigarPorteiro:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Handler: src/handlers/porteiro.startEC2Intances # Subistituir pelo nome da função no arquivo js
+      Runtime: nodejs16.x
+      
+      Architectures:
+      - x86_64
+      Events:
+        CloudwatchEvent:
+          Type: Schedule # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Schedule: cron(40, 02, ? * MON-SAT 2024) # cron como informar (Minutos, Horas  Dia do mês, Dia da Semana, Ano) dia da semana (MON-FRI Segunda a sexta)
+      Policies: 
+         - Statement:
+           - Sid: StartEC2
+             Effect: Allow
+             Action:
+              - ec2:StartInstances
+             Resource: '*'     
+  DesligarPorteiro:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Handler: src/handlers/porteiro.stoptEC2Intances # Subistituir pelo nome da função no arquivo js
+      Runtime: nodejs16.x
+      
+      Architectures:
+      - x86_64
+      Events:
+        CloudwatchEvent:
+          Type: Schedule # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Schedule: cron(45, 02, ? * MON-SAT 2024) # cron como informar (Minutos, Horas  Dia do mês, Dia da Semana, Ano) dia da semana (MON-FRI Segunda a sexta)
+      Policies: 
+         - Statement:
+           - Sid: StoptEC2
+             Effect: Allow
+             Action:
+              - ec2:StopInstances
+             Resource: '*'                   
+  
